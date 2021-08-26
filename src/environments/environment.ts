@@ -3,7 +3,18 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  chatBotUrl: 'https://localhost:44394/',
+  lineInfo: {
+    authUrl: 'https://access.line.me/oauth2/v2.1/authorize',
+    redirectUrl: 'http://localhost:4200/callback/line',
+    clientId: '1656348599'
+  },
+  googleInfo: {
+    authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+    redirectUrl: 'http://localhost:4200/callback/google',
+    clientId: '563822801624-brvnu1sftmi78lfntvkk9s38jc4ubke7.apps.googleusercontent.com'
+  }
 };
 
 /*

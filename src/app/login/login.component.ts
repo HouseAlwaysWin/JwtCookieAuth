@@ -1,16 +1,15 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params } from '@angular/router';
-import { environment } from 'src/environments/environment';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { LineTokenRes } from './models/lineTokenRes';
+import { ActivatedRoute } from '@angular/router';
 import { Guid } from 'guid-typescript';
+import { environment } from 'src/environments/environment';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
 })
-export class AppComponent implements OnInit {
+export class LoginComponent implements OnInit {
   env = environment;
   title = 'angular-line-login';
   csrfToken = null;
@@ -27,25 +26,6 @@ export class AppComponent implements OnInit {
     this.initCsrfToken();
     this.getLineLoginUrl();
     this.getGoogleLoginUrl();
-
-    // this.route.queryParams.subscribe((params: Params) => {
-    //   let code = params['code'];
-    //   let state = params['state'];
-
-    //   let csrfToken = localStorage.getItem('csrf_token');
-
-    //   if (code && (state === csrfToken)) {
-    //     this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/getLineAccessToken`, { code })
-    //       .subscribe((result: LineTokenRes) => {
-    //         localStorage.setItem('login_token', JSON.stringify(result));
-    //         let token = localStorage.getItem('login_token');
-    //         window.location.href = '/';
-    //         localStorage.removeItem('csrf_token');
-    //         console.log(token);
-    //       });
-    //   }
-
-    // });
   }
 
   logout() {

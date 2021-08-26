@@ -1,0 +1,24 @@
+<div>
+
+  <div>
+    <a [href]="lineLoginUrl"
+      class="login-line-btn">Line Login</a>
+
+    <button (click)="verifyToken()">
+      Verify Access Token
+    </button>
+
+    <button (click)="getProfile()">
+      Get Profile
+    </button>
+  </div>
+
+  <div>
+    <a [href]="googleLoginUrl">Google Login</a>
+  </div>
+
+  <button (click)="logout()">
+    Logout
+  </button>
+
+</div>
