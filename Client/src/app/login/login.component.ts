@@ -25,6 +25,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.initCsrfToken();
     this.getLineLoginUrl();
+    // this.googleUrl();
     this.getGoogleLoginUrl();
   }
 
@@ -63,10 +64,10 @@ export class LoginComponent implements OnInit {
 
   initCsrfToken() {
     // 避免CSRF跨站攻擊
-    let csrfToken = localStorage.getItem('csrf_token');
+    let csrfToken = sessionStorage.getItem('csrf_token');
     if (!csrfToken) {
       this.csrfToken = Guid.create();
-      localStorage.setItem('csrf_token', this.csrfToken.toString());
+      sessionStorage.setItem('csrf_token', this.csrfToken.toString());
     }
     else {
       this.csrfToken = csrfToken;
@@ -78,7 +79,14 @@ export class LoginComponent implements OnInit {
   }
 
   getGoogleLoginUrl() {
-    this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=token&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}`;
+    this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=code&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}&prompt=consent&access_type=offline`;
   }
+
+  // googleUrl() {
+  //   this.http.get(`${this.env.chatBotUrl}api/Auth/getOAuthUrl?providerName=Google`)
+  //     .subscribe((url: string) => {
+  //       this.googleLoginUrl = url;
+  //     });
+  // }
 
 }
