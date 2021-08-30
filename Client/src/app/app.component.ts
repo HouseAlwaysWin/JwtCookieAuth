@@ -64,10 +64,10 @@ export class AppComponent implements OnInit {
 
   initCsrfToken() {
     // 避免CSRF跨站攻擊
-    let csrfToken = localStorage.getItem('csrf_token');
+    let csrfToken = sessionStorage.getItem('csrf_token');
     if (!csrfToken) {
       this.csrfToken = Guid.create();
-      localStorage.setItem('csrf_token', this.csrfToken.toString());
+      sessionStorage.setItem('csrf_token', this.csrfToken.toString());
     }
     else {
       this.csrfToken = csrfToken;

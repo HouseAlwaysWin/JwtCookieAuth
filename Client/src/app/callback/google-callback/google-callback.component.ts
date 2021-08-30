@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { LineTokenRes } from 'src/app/models/lineTokenRes';
 import { environment } from 'src/environments/environment';
 
@@ -13,29 +13,27 @@ export class GoogleCallbackComponent implements OnInit {
   env = environment;
   constructor(
     private http: HttpClient,
-    private router: Router,
     private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe((params: Params) => {
-      let code = params['code'];
-      let state = params['state'];
-      let csrfToken = localStorage.getItem('csrf_token');
-      console.log(state);
-      console.log(csrfToken);
-      console.log(code);
+    let code = this.route.snapshot.queryParamMap.get('code');
+    let state = this.route.snapshot.queryParamMap.get('state');
+    let csrfToken = sessionStorage.getItem('csrf_token');
+    console.log(code)
+    console.log(state);
+    console.log(csrfToken);
 
-      if (code && (state === csrfToken)) {
-        this.http.post(`${this.env.chatBotUrl}api/Account/getGoogleAccessToken`, { code })
-          .subscribe((result: LineTokenRes) => {
-            localStorage.setItem('login_token', result.access_token);
-            let token = localStorage.getItem('login_token');
-            localStorage.removeItem('csrf_token');
-            this.router.navigate(['/']);
-          });
-      }
-
-    });
+    if (code && (state === csrfToken)) {
+      this.http.post(`${this.env.chatBotUrl}api/Auth/loginGoogle`, { code })
+        .subscribe((result: LineTokenRes) => {
+          console.log(result);
+          localStorage.setItem('login_token', result.access_token);
+          let token = localStorage.getItem('login_token');
+          window.location.href = '/';
+          localStorage.removeItem('csrf_token');
+          console.log(token);
+        });
+    }
 
 
   }
