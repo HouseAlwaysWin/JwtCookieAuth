@@ -17,6 +17,8 @@ export class LoginComponent implements OnInit {
   lineLoginUrl: string;
   googleLoginUrl: string;
 
+  isLogin: boolean;
+
   constructor(
     private http: HttpClient,
     private route: ActivatedRoute
@@ -25,42 +27,43 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.initCsrfToken();
     this.getLineLoginUrl();
-    // this.googleUrl();
     this.getGoogleLoginUrl();
+    this.isAuth();
   }
 
   logout() {
-    localStorage.removeItem('login_token');
+    localStorage.removeItem('token');
+    window.location.href = '/';
   }
 
-  verifyToken() {
-    let token = JSON.parse(localStorage.getItem('login_token'));
+  // verifyToken() {
+  //   let token = JSON.parse(localStorage.getItem('login_token'));
 
-    console.log(token?.accessToken);
-    if (token?.accessToken) {
-      this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/verifyToken`, {
-        token: token.accessToken
-      })
-        .subscribe((result) => {
-          console.log(result);
-        });
-    }
-  }
+  //   console.log(token?.accessToken);
+  //   if (token?.accessToken) {
+  //     this.http.post(`${this.env.chatBotUrl}api/OAuth/verifyToken`, {
+  //       token: token.accessToken
+  //     })
+  //       .subscribe((result) => {
+  //         console.log(result);
+  //       });
+  //   }
+  // }
 
 
-  getProfile() {
-    let token = JSON.parse(localStorage.getItem('login_token'));
+  // getProfile() {
+  //   let token = JSON.parse(localStorage.getItem('login_token'));
 
-    console.log(token?.accessToken);
-    if (token?.accessToken) {
-      this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/getLineProfile`, {
-        token: token.accessToken
-      })
-        .subscribe((result) => {
-          console.log(result);
-        });
-    }
-  }
+  //   console.log(token?.accessToken);
+  //   if (token?.accessToken) {
+  //     this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/getLineProfile`, {
+  //       token: token.accessToken
+  //     })
+  //       .subscribe((result) => {
+  //         console.log(result);
+  //       });
+  //   }
+  // }
 
   initCsrfToken() {
     // 避免CSRF跨站攻擊
@@ -79,14 +82,15 @@ export class LoginComponent implements OnInit {
   }
 
   getGoogleLoginUrl() {
-    this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=code&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}&prompt=consent&access_type=offline`;
+    this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=code&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}&prompt=consent`;
   }
 
-  // googleUrl() {
-  //   this.http.get(`${this.env.chatBotUrl}api/Auth/getOAuthUrl?providerName=Google`)
-  //     .subscribe((url: string) => {
-  //       this.googleLoginUrl = url;
-  //     });
-  // }
+  isAuth() {
+    this.http.get(`${this.env.chatBotUrl}api/OAuth/IsAuth`).subscribe((result: boolean) => {
+      this.isLogin = result;
+      console.log(result);
+    })
+  }
+
 
 }

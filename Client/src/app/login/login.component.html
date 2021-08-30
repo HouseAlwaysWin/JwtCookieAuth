@@ -1,23 +1,22 @@
 <div>
-  <div>
-    <a [href]="lineLoginUrl"
-       class="login-line-btn">Line Login</a>
+  <div *ngIf="!isLogin">
+    <div>
+      <a [href]="lineLoginUrl"
+        class="login-line-btn">
+        <img src="/assets/imgs/line_icon.png" />
+      </a>
+    </div>
 
-    <button (click)="verifyToken()">
-      Verify Access Token
-    </button>
-
-    <button (click)="getProfile()">
-      Get Profile
+    <div>
+      <a [href]="googleLoginUrl">
+        <img src="/assets/imgs/google_icon.png" />
+      </a>
+    </div>
+  </div>
+  <div *ngIf="isLogin">
+    <button (click)="logout()">
+      Logout
     </button>
   </div>
-
-  <div>
-    <a [href]="googleLoginUrl">Google Login</a>
-  </div>
-
-  <button (click)="logout()">
-    Logout
-  </button>
 
 </div>

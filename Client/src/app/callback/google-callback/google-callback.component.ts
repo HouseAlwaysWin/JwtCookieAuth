@@ -6,8 +6,7 @@ import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-google-callback',
-  templateUrl: './google-callback.component.html',
-  styleUrls: ['./google-callback.component.scss']
+  template: '',
 })
 export class GoogleCallbackComponent implements OnInit {
   env = environment;
@@ -24,14 +23,15 @@ export class GoogleCallbackComponent implements OnInit {
     console.log(csrfToken);
 
     if (code && (state === csrfToken)) {
-      this.http.post(`${this.env.chatBotUrl}api/Auth/loginGoogle`, { code })
-        .subscribe((result: LineTokenRes) => {
+      this.http.post(`${this.env.chatBotUrl}api/OAuth/login`, {
+        code: code,
+        provider: 'Google'
+      })
+        .subscribe((result: any) => {
           console.log(result);
-          localStorage.setItem('login_token', result.access_token);
-          let token = localStorage.getItem('login_token');
+          localStorage.setItem('token', result.token);
           window.location.href = '/';
-          localStorage.removeItem('csrf_token');
-          console.log(token);
+          sessionStorage.removeItem('csrf_token');
         });
     }
 

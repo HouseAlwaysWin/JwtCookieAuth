@@ -6,8 +6,7 @@ import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-line-callback',
-  templateUrl: './line-callback.component.html',
-  styleUrls: ['./line-callback.component.scss']
+  template: '',
 })
 export class LineCallbackComponent implements OnInit {
   env = environment;
@@ -23,11 +22,15 @@ export class LineCallbackComponent implements OnInit {
       let csrfToken = sessionStorage.getItem('csrf_token');
 
       if (code && (state === csrfToken)) {
-        this.http.post(`${this.env.chatBotUrl}api/Auth/getLineAccessToken`, { code })
-          .subscribe((result: LineTokenRes) => {
-            localStorage.setItem('login_token', result.access_token);
-            let token = localStorage.getItem('login_token');
-            localStorage.removeItem('csrf_token');
+        this.http.post(`${this.env.chatBotUrl}api/OAuth/Login`, {
+          code: code,
+          Provider: 'Line'
+        })
+          .subscribe((result: any) => {
+            localStorage.setItem('token', result.token);
+            let token = localStorage.getItem('token');
+            console.log(token);
+            sessionStorage.removeItem('csrf_token');
             this.router.navigate(['/']);
           });
       }
