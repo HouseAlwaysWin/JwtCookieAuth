@@ -21,16 +21,17 @@ export class LineCallbackComponent implements OnInit {
       let code = params['code'];
       let state = params['state'];
       let csrfToken = localStorage.getItem('csrf_token');
+      console.log(state);
+      console.log(csrfToken);
+      console.log(code);
 
       if (code && (state === csrfToken)) {
-        this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/getLineAccessToken`, { code })
+        this.http.post(`${this.env.chatBotUrl}api/Account/getLineAccessToken`, { code })
           .subscribe((result: LineTokenRes) => {
-            console.log(result);
             localStorage.setItem('login_token', result.access_token);
             let token = localStorage.getItem('login_token');
-            window.location.href = '/';
             localStorage.removeItem('csrf_token');
-            console.log(token);
+            this.router.navigate(['/']);
           });
       }
 
