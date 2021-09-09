@@ -15,6 +15,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Server.Helpers;
 
 namespace Server
 {
@@ -34,36 +35,50 @@ namespace Server
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             services.AddControllers();
 
-             var Issuer = (env == "Development") ?_config["Token:Issuer"] : Environment.GetEnvironmentVariable("Token:Issuer");
-            var tokenKey = (env == "Development") ?_config["Token:Key"] : Environment.GetEnvironmentVariable("Token:Key");
+            var Issuer = (env == "Development") ? _config["Token:Issuer"] : Environment.GetEnvironmentVariable("Token:Issuer");
+            var tokenKey = (env == "Development") ? _config["Token:Key"] : Environment.GetEnvironmentVariable("Token:Key");
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>{
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters{
+                .AddScheme<JwtBearerOptions,JwtCookieAuthenticationHandler>("Bearer", options =>{
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    {
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
                         ValidIssuer = Issuer,
                         ValidateIssuer = true,
                         ValidateAudience = false,
                     };
-
-                    // options.Events = new JwtBearerEvents
-                    // {
-                    //     OnMessageReceived = context =>
-                    //     {
-                    //         var accessToken = context.Request.Query["access_token"];
-
-                    //         var path = context.HttpContext.Request.Path;
-                    //         if(!string.IsNullOrEmpty(accessToken) && 
-                    //             path.StartsWithSegments("/hubs"))
-                    //         {
-                    //             context.Token = accessToken;
-                    //         }
-
-                    //         return Task.CompletedTask;
-                    //     }
-                    // };
                 });
+            // .AddJwtBearer(options =>
+            // {
+            //     options.SaveToken = true;
+            //     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            //     {
+            //         ValidateIssuerSigningKey = true,
+            //         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
+            //         ValidIssuer = Issuer,
+            //         ValidateIssuer = true,
+            //         ValidateAudience = false,
+            //     };
+
+            //     // options.Events = new JwtBearerEvents
+            //     // {
+            //     //     OnMessageReceived = context =>
+            //     //     {
+            //     //         var accessToken = context.Request.Query["access_token"];
+
+            //     //         var path = context.HttpContext.Request.Path;
+            //     //         if(!string.IsNullOrEmpty(accessToken) && 
+            //     //             path.StartsWithSegments("/hubs"))
+            //     //         {
+            //     //             context.Token = accessToken;
+            //     //         }
+
+            //     //         return Task.CompletedTask;
+            //     //     }
+            //     // };
+            // });
 
             services.AddCors();
 
@@ -87,7 +102,7 @@ namespace Server
 
             app.UseRouting();
 
-            app.UseCors(opt => 
+            app.UseCors(opt =>
                 opt.AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials()
@@ -96,7 +111,7 @@ namespace Server
 
             app.UseAuthentication();
             app.UseAuthorization();
-                
+
 
             app.UseEndpoints(endpoints =>
             {

@@ -13,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Server.Models;
 using Server.OauthPrividers;
+using Microsoft.AspNetCore.Http;
 
 namespace Server.Controllers
 {
@@ -109,7 +110,18 @@ namespace Server.Controllers
             var email = idToken.Claims.FirstOrDefault(c => c.Type == "email").Value;
             string token = CreateToken(name, name, email);
 
+            SetHttpOnlyCookie(token);
+
             return Ok(result);
+        }
+
+        private void SetHttpOnlyCookie(string token){
+            var cookieOptions = new CookieOptions{
+                HttpOnly = true,
+                SameSite = SameSiteMode.Strict,
+                Secure = true
+            };
+            Response.Cookies.Append("token",token,cookieOptions);
         }
 
         [HttpGet]
