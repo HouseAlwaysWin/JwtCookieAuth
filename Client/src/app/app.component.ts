@@ -27,25 +27,6 @@ export class AppComponent implements OnInit {
     this.initCsrfToken();
     this.getLineLoginUrl();
     this.getGoogleLoginUrl();
-
-    // this.route.queryParams.subscribe((params: Params) => {
-    //   let code = params['code'];
-    //   let state = params['state'];
-
-    //   let csrfToken = localStorage.getItem('csrf_token');
-
-    //   if (code && (state === csrfToken)) {
-    //     this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/getLineAccessToken`, { code })
-    //       .subscribe((result: LineTokenRes) => {
-    //         localStorage.setItem('login_token', JSON.stringify(result));
-    //         let token = localStorage.getItem('login_token');
-    //         window.location.href = '/';
-    //         localStorage.removeItem('csrf_token');
-    //         console.log(token);
-    //       });
-    //   }
-
-    // });
   }
 
   logout() {
@@ -98,7 +79,7 @@ export class AppComponent implements OnInit {
   }
 
   getGoogleLoginUrl() {
-    this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=token&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}`;
+    this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=code&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}`;
   }
 
 }

@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -16,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Server.Helpers;
+using Server.Middleware;
 
 namespace Server
 {
@@ -39,8 +42,9 @@ namespace Server
             var tokenKey = (env == "Development") ? _config["Token:Key"] : Environment.GetEnvironmentVariable("Token:Key");
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddScheme<JwtBearerOptions,JwtCookieAuthenticationHandler>("Bearer", options =>{
-                    options.SaveToken = true;
+                .AddScheme<JwtBearerOptions, JwtCookieAuthenticationHandler>("Bearer", options =>
+                {
+                    //options.SaveToken = true;
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
@@ -82,6 +86,20 @@ namespace Server
 
             services.AddCors();
 
+            services.AddMvc().AddMvcOptions(option =>
+            {
+                option.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+            });
+
+            services.AddAntiforgery(options =>
+            {
+                options.Cookie.Name = "XSRF-TOKEN";
+                options.HeaderName = "X-XSRF-TOKEN";
+                options.Cookie.HttpOnly = false;
+                options.SuppressXFrameOptionsHeader = false;
+            });
+
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Server", Version = "v1" });
@@ -89,7 +107,7 @@ namespace Server
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IAntiforgery antiforgery)
         {
             if (env.IsDevelopment())
             {
@@ -109,8 +127,11 @@ namespace Server
                 .WithOrigins(
                    "http://localhost:4200"));
 
+
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseMiddleware<ValidateAntiForgeryTokenMiddleware>();
 
 
             app.UseEndpoints(endpoints =>

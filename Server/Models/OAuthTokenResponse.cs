@@ -2,7 +2,7 @@ using Newtonsoft.Json;
 
 namespace Server.Models
 {
-    public class LineTokenResponse
+    public class OAuthTokenResponse
     {
         [JsonProperty("access_token")]
         public string AccessToken { get; set; }

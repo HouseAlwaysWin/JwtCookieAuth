@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { LineTokenRes } from 'src/app/models/lineTokenRes';
@@ -6,8 +6,7 @@ import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-line-callback',
-  templateUrl: './line-callback.component.html',
-  styleUrls: ['./line-callback.component.scss']
+  template: '',
 })
 export class LineCallbackComponent implements OnInit {
   env = environment;
@@ -20,17 +19,23 @@ export class LineCallbackComponent implements OnInit {
     this.route.queryParams.subscribe((params: Params) => {
       let code = params['code'];
       let state = params['state'];
-      let csrfToken = sessionStorage.getItem('csrf_token');
+      let csrfToken = localStorage.getItem('csrf_token');
 
-      if (code && (state === csrfToken)) {
-        this.http.post(`${this.env.chatBotUrl}api/Auth/getLineAccessToken`, { code })
-          .subscribe((result: LineTokenRes) => {
-            console.log(result);
-            localStorage.setItem('login_token', result.access_token);
-            let token = localStorage.getItem('login_token');
-            window.location.href = '/';
+      if (code) {
+        const options = {
+          headers: new HttpHeaders({ "X-XSRF-TOKEN": csrfToken }),
+          withCredentials: true
+        };
+        this.http.post(`${this.env.chatBotUrl}api/OAuth/Login`, {
+          code: code,
+          Provider: 'Line'
+        }, options)
+          .subscribe((result: any) => {
+            // localStorage.setItem('token', result.token);
+            // let token = localStorage.getItem('token');
+            // console.log(token);
             localStorage.removeItem('csrf_token');
-            console.log(token);
+            this.router.navigate(['/']);
           });
       }
 
