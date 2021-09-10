@@ -24,16 +24,12 @@ export class LineCallbackComponent implements OnInit {
       if (code) {
         const options = {
           headers: new HttpHeaders({ "X-XSRF-TOKEN": csrfToken }),
-          withCredentials: true
         };
         this.http.post(`${this.env.chatBotUrl}api/OAuth/Login`, {
           code: code,
           Provider: 'Line'
         }, options)
           .subscribe((result: any) => {
-            // localStorage.setItem('token', result.token);
-            // let token = localStorage.getItem('token');
-            // console.log(token);
             localStorage.removeItem('csrf_token');
             this.router.navigate(['/']);
           });

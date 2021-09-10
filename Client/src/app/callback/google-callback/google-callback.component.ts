@@ -23,20 +23,19 @@ export class GoogleCallbackComponent implements OnInit {
     console.log(csrfToken);
 
     if (code) {
-      // const headers = {
-      //   headers: new HttpHeaders({ "X-XSRF-TOKEN": csrfToken })
-      // };
+      const options = {
+        headers: new HttpHeaders({ "X-XSRF-TOKEN": csrfToken })
+      };
 
       this.http.post(`${this.env.chatBotUrl}api/OAuth/login`, {
         code: code,
         provider: 'Google'
-      })
-        .subscribe((result: any) => {
-          console.log(result);
-          // localStorage.setItem('token', result.token);
-          window.location.href = '/';
-          localStorage.removeItem('csrf_token');
-        });
+      }, options).subscribe((result: any) => {
+        window.location.href = '/';
+        localStorage.removeItem('csrf_token');
+      }, error => {
+        window.location.href = '/';
+      });
     }
 
 

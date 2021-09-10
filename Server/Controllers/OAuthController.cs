@@ -21,6 +21,7 @@ namespace Server.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [IgnoreAntiforgeryToken]
     public class OAuthController : ControllerBase
     {
         private readonly IConfiguration _config;
@@ -40,7 +41,6 @@ namespace Server.Controllers
 
 
         [HttpGet("getCsrfToken")]
-        [IgnoreAntiforgeryToken]
         public ActionResult GetCsrfToken()
         {
 
@@ -73,7 +73,7 @@ namespace Server.Controllers
 
 
         [HttpPost("login")]
-        [AutoValidateAntiforgeryToken]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(OAuthLoginParam req)
         {
 
@@ -198,7 +198,7 @@ namespace Server.Controllers
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.Now.AddDays(7),
+                Expires = DateTime.Now.AddMinutes(1),
                 SigningCredentials = creds,
                 Issuer = issuer
             };

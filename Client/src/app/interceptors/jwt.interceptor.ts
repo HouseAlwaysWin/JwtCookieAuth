@@ -17,6 +17,9 @@ export class JwtInterceptor implements HttpInterceptor {
     console.log(csrf_token);
     req = req.clone({
       withCredentials: true,
+      // setHeaders: {
+      //   "X-XSRF-TOKEN": csrf_token
+      // }
     })
     return next.handle(req);
   }

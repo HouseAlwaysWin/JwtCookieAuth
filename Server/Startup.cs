@@ -88,7 +88,7 @@ namespace Server
 
             services.AddMvc().AddMvcOptions(option =>
             {
-                option.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                option.Filters.Add(new ValidateAntiForgeryTokenAttribute());
             });
 
             services.AddAntiforgery(options =>
