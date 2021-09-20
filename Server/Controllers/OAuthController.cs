@@ -16,6 +16,8 @@ using Server.OauthPrividers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Antiforgery;
+using Server.Services;
+using Microsoft.Extensions.Logging;
 
 namespace Server.Controllers
 {
@@ -27,16 +29,23 @@ namespace Server.Controllers
         private readonly IConfiguration _config;
         private readonly IAntiforgery _antiforgery;
         private readonly Dictionary<string, OAuthProviderConfig> _oauthConfig;
+        private readonly IAuthService _authService;
+        private readonly ILogger<OAuthController> _logger;
 
         private readonly string GOOGLE_ACCESSTOKEN_URL = "https://oauth2.googleapis.com/token";
 
-        public OAuthController(IConfiguration config,
-        IAntiforgery antiforgery,
-        IOptions<Dictionary<string, OAuthProviderConfig>> oauthConfig)
+        public OAuthController(
+            IConfiguration config,
+            IAntiforgery antiforgery,
+            IAuthService authService,
+            IOptions<Dictionary<string, OAuthProviderConfig>> oauthConfig,
+            ILogger<OAuthController> logger)
         {
             this._config = config;
             this._antiforgery = antiforgery;
             this._oauthConfig = oauthConfig.Value;
+            this._authService = authService;
+            this._logger = logger;
         }
 
 
@@ -59,7 +68,7 @@ namespace Server.Controllers
 
         [Authorize]
         [HttpGet("logout")]
-        public async Task<ActionResult> Logout()
+        public ActionResult Logout()
         {
             var cookieOptions = new CookieOptions
             {
@@ -69,6 +78,22 @@ namespace Server.Controllers
             };
             Response.Cookies.Delete("token", cookieOptions);
             return Ok();
+        }
+
+
+        public async Task<ActionResult> ExternalLogin(ExternalAuthParam req)
+        {
+            try
+            {
+                var userInfo = await _authService.ExternalAuthenticate(req);
+                return Ok(userInfo);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+            }
+            return BadRequest();
+
         }
 
 
@@ -206,6 +231,7 @@ namespace Server.Controllers
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var token = tokenHandler.CreateToken(tokenDescriptor);
+
 
             var tokenstring = tokenHandler.WriteToken(token);
             return tokenstring;
