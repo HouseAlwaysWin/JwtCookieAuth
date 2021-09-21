@@ -19,6 +19,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Server.Helpers;
 using Server.Middleware;
+using Server.Services;
 
 namespace Server
 {
@@ -83,6 +84,11 @@ namespace Server
             //     //     }
             //     // };
             // });
+
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ITokenService, TokenService>();
 
             services.AddCors();
 

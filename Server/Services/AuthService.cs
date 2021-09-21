@@ -16,6 +16,7 @@ namespace Server.Services
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ICachedService _cachedService;
         private readonly ITokenService _tokenService;
         private readonly IConfiguration _config;
 
@@ -23,12 +24,14 @@ namespace Server.Services
             ITokenService tokenService,
             IConfiguration config,
             IHttpContextAccessor httpContextAccessor,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ICachedService cachedService)
         {
             this._tokenService = tokenService;
             this._config = config;
             this._httpContextAccessor = httpContextAccessor;
             this._httpClientFactory = httpClientFactory;
+            this._cachedService = cachedService;
         }
 
         public async Task<AuthResponse> ExternalAuthenticate(ExternalAuthParam req)
@@ -63,24 +66,72 @@ namespace Server.Services
                     var info = handler.ReadJwtToken(result.IdToken);
                     var name = info.Claims.FirstOrDefault(c => c.Type == "name").Value;
                     var email = info.Claims.FirstOrDefault(c => c.Type == "email").Value;
+                    var photoUrl = info.Claims.FirstOrDefault(c => c.Type == "photo").Value;
                     jwtToken = _tokenService.CreateJwtToken(tokenKey, issuer, new List<Claim>
                     {
                         new Claim("Provider","Google"),
                         new Claim("Name",name),
                         new Claim("Email",email)
                     });
-                    refreshToken = _tokenService.GenerateRefreshToken(ipAddress);
 
+                    refreshToken = _tokenService.GenerateRefreshToken(ipAddress);
                     SetHttpOnlyCookie("jwtToken", jwtToken, 10);
                     SetHttpOnlyCookie("refreshToken", refreshToken.Token, 30);
+
+                    var user = await GetAndSetUserInfoAsync(new UserInfo
+                    {
+                        Email = email,
+                        Name = name,
+                        Provider = req.Provider,
+                        PictureUrl = photoUrl
+                    });
+
+                    user.RefreshTokens.Add(refreshToken);
                     userInfo.Email = email;
                     userInfo.Username = name;
                     userInfo.Provider = "Google";
+                    userInfo.PictureUrl = user.PictureUrl;
+
                     break;
                 case "Line":
                     break;
             }
 
+            return userInfo;
+        }
+
+        private async Task<UserInfo> GetAndSetUserInfoAsync(UserInfo userInfo)
+        {
+            var users = await _cachedService.GetAndSetAsync("userList", new List<UserInfo>());
+            var user = new UserInfo();
+            if (users.Count > 0)
+            {
+                if (!string.IsNullOrEmpty(userInfo.Email) && !string.IsNullOrEmpty(userInfo.Name))
+                {
+                    user = users.FirstOrDefault(u => u.Email == userInfo.Email && u.Name == userInfo.Name && u.Provider == userInfo.Provider);
+                    if (user != null)
+                    {
+                        return user;
+                    }
+                }
+                else if (!string.IsNullOrEmpty(userInfo.Email))
+                {
+                    user = users.FirstOrDefault(u => u.Email == userInfo.Email && u.Provider == userInfo.Provider);
+                    if (user != null)
+                    {
+                        return user;
+                    }
+                }
+                else
+                {
+                    user = users.FirstOrDefault(u => u.Name == userInfo.Name && u.Provider == userInfo.Provider);
+                    if (user != null)
+                    {
+                        return user;
+                    }
+                }
+            }
+            users.Add(userInfo);
             return userInfo;
         }
 
