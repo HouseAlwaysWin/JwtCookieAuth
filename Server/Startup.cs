@@ -87,7 +87,11 @@ namespace Server
 
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpClient<IAuthService, AuthService>();
+            //.SetHandlerLifetime(TimeSpan.FromMinutes(5))
+            //.AddPolicyHandler(GetRetryPolicy());
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ICachedService, CachedService>();
             services.AddScoped<ITokenService, TokenService>();
 
             services.AddCors();

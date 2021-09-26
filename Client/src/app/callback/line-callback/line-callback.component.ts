@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { LineTokenRes } from 'src/app/models/lineTokenRes';
+import { AuthService } from 'src/app/services/auth.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -12,6 +13,7 @@ export class LineCallbackComponent implements OnInit {
   env = environment;
 
   constructor(private http: HttpClient,
+    private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router) { }
 
@@ -25,12 +27,12 @@ export class LineCallbackComponent implements OnInit {
         const options = {
           headers: new HttpHeaders({ "X-XSRF-TOKEN": csrfToken }),
         };
-        this.http.post(`${this.env.chatBotUrl}api/OAuth/Login`, {
+        this.http.post(`${this.env.backendUrl}api/Auth/ExternalLogin`, {
           code: code,
           Provider: 'Line'
         }, options)
           .subscribe((result: any) => {
-            localStorage.removeItem('csrf_token');
+            this.authService.isAuth.next(true);
             this.router.navigate(['/']);
           });
       }

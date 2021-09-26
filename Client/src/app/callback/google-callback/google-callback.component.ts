@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { LineTokenRes } from 'src/app/models/lineTokenRes';
+import { AuthService } from 'src/app/services/auth.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -11,6 +12,7 @@ import { environment } from 'src/environments/environment';
 export class GoogleCallbackComponent implements OnInit {
   env = environment;
   constructor(
+    private authService: AuthService,
     private http: HttpClient,
     private route: ActivatedRoute) { }
 
@@ -27,12 +29,13 @@ export class GoogleCallbackComponent implements OnInit {
         headers: new HttpHeaders({ "X-XSRF-TOKEN": csrfToken })
       };
 
-      this.http.post(`${this.env.chatBotUrl}api/OAuth/login`, {
+      this.http.post(`${this.env.backendUrl}api/Auth/ExternalLogin`, {
         code: code,
         provider: 'Google'
       }, options).subscribe((result: any) => {
+        this.authService.isAuth.next(true);
         window.location.href = '/';
-        localStorage.removeItem('csrf_token');
+        // localStorage.removeItem('csrf_token');
       }, error => {
         window.location.href = '/';
       });

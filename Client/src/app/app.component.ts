@@ -4,6 +4,7 @@ import { environment } from 'src/environments/environment';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { LineTokenRes } from './models/lineTokenRes';
 import { Guid } from 'guid-typescript';
+import { AuthService } from './services/auth.service';
 
 @Component({
   selector: 'app-root',
@@ -20,66 +21,68 @@ export class AppComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
-    this.initCsrfToken();
-    this.getLineLoginUrl();
-    this.getGoogleLoginUrl();
+    // this.initCsrfToken();
+    // this.getLineLoginUrl();
+    // this.getGoogleLoginUrl();
+    this.authService.checkAuth();
   }
 
-  logout() {
-    localStorage.removeItem('login_token');
-  }
+  // logout() {
+  //   localStorage.removeItem('login_token');
+  // }
 
-  verifyToken() {
-    let token = JSON.parse(localStorage.getItem('login_token'));
+  // verifyToken() {
+  //   let token = JSON.parse(localStorage.getItem('login_token'));
 
-    console.log(token?.accessToken);
-    if (token?.accessToken) {
-      this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/verifyToken`, {
-        token: token.accessToken
-      })
-        .subscribe((result) => {
-          console.log(result);
-        });
-    }
-  }
+  //   console.log(token?.accessToken);
+  //   if (token?.accessToken) {
+  //     this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/verifyToken`, {
+  //       token: token.accessToken
+  //     })
+  //       .subscribe((result) => {
+  //         console.log(result);
+  //       });
+  //   }
+  // }
 
 
-  getProfile() {
-    let token = JSON.parse(localStorage.getItem('login_token'));
+  // getProfile() {
+  //   let token = JSON.parse(localStorage.getItem('login_token'));
 
-    console.log(token?.accessToken);
-    if (token?.accessToken) {
-      this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/getLineProfile`, {
-        token: token.accessToken
-      })
-        .subscribe((result) => {
-          console.log(result);
-        });
-    }
-  }
+  //   console.log(token?.accessToken);
+  //   if (token?.accessToken) {
+  //     this.http.post(`${this.env.chatBotUrl}api/ThirdPartyAuth/getLineProfile`, {
+  //       token: token.accessToken
+  //     })
+  //       .subscribe((result) => {
+  //         console.log(result);
+  //       });
+  //   }
+  // }
 
-  initCsrfToken() {
-    // 避免CSRF跨站攻擊
-    let csrfToken = sessionStorage.getItem('csrf_token');
-    if (!csrfToken) {
-      this.csrfToken = Guid.create();
-      sessionStorage.setItem('csrf_token', this.csrfToken.toString());
-    }
-    else {
-      this.csrfToken = csrfToken;
-    }
-  }
+  // initCsrfToken() {
+  //   // 避免CSRF跨站攻擊
+  //   let csrfToken = sessionStorage.getItem('csrf_token');
+  //   if (!csrfToken) {
+  //     this.csrfToken = Guid.create();
+  //     sessionStorage.setItem('csrf_token', this.csrfToken.toString());
+  //   }
+  //   else {
+  //     this.csrfToken = csrfToken;
+  //   }
+  // }
 
-  getLineLoginUrl() {
-    this.lineLoginUrl = `${this.env.lineInfo.authUrl}?response_type=code&client_id=${this.env.lineInfo.clientId}&redirect_uri=${this.env.lineInfo.redirectUrl}&state=${this.csrfToken}&scope=profile%20openid%20email`
-  }
+  // getLineLoginUrl() {
+  //   this.lineLoginUrl = `${this.env.lineInfo.authUrl}?response_type=code&client_id=${this.env.lineInfo.clientId}&redirect_uri=${this.env.lineInfo.redirectUrl}&state=${this.csrfToken}&scope=profile%20openid%20email`
+  // }
 
-  getGoogleLoginUrl() {
-    this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=code&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}`;
-  }
+  // getGoogleLoginUrl() {
+  //   this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=code&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}`;
+  // }
 
 }

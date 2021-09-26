@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  chatBotUrl: 'https://localhost:44335/',
+  backendUrl: 'https://localhost:44335/',
   lineInfo: {
     authUrl: 'https://access.line.me/oauth2/v2.1/authorize',
     redirectUrl: 'http://localhost:4200/callback/line',

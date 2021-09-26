@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Guid } from 'guid-typescript';
 import { environment } from 'src/environments/environment';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -21,23 +22,25 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    public authService: AuthService
   ) { }
 
   ngOnInit(): void {
     // this.initCsrfToken();
     this.getCsrfToken();
-    this.isAuth();
+    // this.isAuth();
   }
 
   logout() {
-    this.http.get(`${this.env.chatBotUrl}api/OAuth/logout`).subscribe(res => {
-      window.location.href = '/';
-    });
+    this.authService.logout();
+    // this.http.get(`${this.env.backendUrl}api/OAuth/logout`).subscribe(res => {
+    //   window.location.href = '/';
+    // });
   }
 
   getCsrfToken() {
-    this.http.get<{ token: string }>(`${this.env.chatBotUrl}api/OAuth/getCsrfToken`)
+    this.http.get<{ token: string }>(`${this.env.backendUrl}api/Auth/getCsrfToken`)
       .subscribe(res => {
         console.log(res);
         localStorage.setItem('csrf_token', res.token.toString());
@@ -98,11 +101,11 @@ export class LoginComponent implements OnInit {
     this.googleLoginUrl = `${this.env.googleInfo.authUrl}?scope=profile%20openid%20email&include_granted_scopes=true&response_type=code&state=${this.csrfToken}&redirect_uri=${this.env.googleInfo.redirectUrl}&client_id=${this.env.googleInfo.clientId}&prompt=consent`;
   }
 
-  isAuth() {
-    this.http.get(`${this.env.chatBotUrl}api/OAuth/isAuth`).subscribe((result: boolean) => {
-      this.isLogin = result;
-    })
-  }
+  // isAuth() {
+  //   this.http.get(`${this.env.backendUrl}api/Auth/isAuth`).subscribe((result: boolean) => {
+  //     this.isLogin = result;
+  //   })
+  // }
 
 
 }

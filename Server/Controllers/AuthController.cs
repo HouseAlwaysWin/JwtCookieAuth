@@ -24,22 +24,22 @@ namespace Server.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [IgnoreAntiforgeryToken]
-    public class OAuthController : ControllerBase
+    public class AuthController : ControllerBase
     {
         private readonly IConfiguration _config;
         private readonly IAntiforgery _antiforgery;
         private readonly Dictionary<string, OAuthProviderConfig> _oauthConfig;
         private readonly IAuthService _authService;
-        private readonly ILogger<OAuthController> _logger;
+        private readonly ILogger<AuthController> _logger;
 
         private readonly string GOOGLE_ACCESSTOKEN_URL = "https://oauth2.googleapis.com/token";
 
-        public OAuthController(
+        public AuthController(
             IConfiguration config,
             IAntiforgery antiforgery,
             IAuthService authService,
             IOptions<Dictionary<string, OAuthProviderConfig>> oauthConfig,
-            ILogger<OAuthController> logger)
+            ILogger<AuthController> logger)
         {
             this._config = config;
             this._antiforgery = antiforgery;
@@ -70,17 +70,20 @@ namespace Server.Controllers
         [HttpGet("logout")]
         public ActionResult Logout()
         {
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.None,
-                Secure = true,
-            };
-            Response.Cookies.Delete("token", cookieOptions);
+            //var cookieOptions = new CookieOptions
+            //{
+            //    HttpOnly = true,
+            //    SameSite = SameSiteMode.None,
+            //    Secure = true,
+            //};
+            Response.Cookies.Delete("jwtToken");
+            Response.Cookies.Delete("refreshToken");
             return Ok();
         }
 
 
+        [HttpPost("ExternalLogin")]
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> ExternalLogin(ExternalAuthParam req)
         {
             try
@@ -97,50 +100,50 @@ namespace Server.Controllers
         }
 
 
-        [HttpPost("login")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(OAuthLoginParam req)
-        {
+        //[HttpPost("login")]
+        //[ValidateAntiForgeryToken]
+        //public async Task<ActionResult> Login(OAuthLoginParam req)
+        //{
 
-            HttpClient client = new HttpClient();
-            var redirectUrl = _config[$"{req.Provider}:RedirectUrl"];
-            var clientId = _config[$"{req.Provider}:ClientId"];
-            var clientSecret = _config[$"{req.Provider}:ClientSecret"];
-            var accessTokenUrl = _config[$"{req.Provider}:AccessTokenUrl"];
+        //    HttpClient client = new HttpClient();
+        //    var redirectUrl = _config[$"{req.Provider}:RedirectUrl"];
+        //    var clientId = _config[$"{req.Provider}:ClientId"];
+        //    var clientSecret = _config[$"{req.Provider}:ClientSecret"];
+        //    var accessTokenUrl = _config[$"{req.Provider}:AccessTokenUrl"];
 
-            var dict = new Dictionary<string, string>
-            {
-                { "grant_type","authorization_code" },
-                { "redirect_uri",redirectUrl },
-                { "client_id",clientId },
-                { "client_secret",clientSecret },
-                { "code",req.Code }
-            };
+        //    var dict = new Dictionary<string, string>
+        //    {
+        //        { "grant_type","authorization_code" },
+        //        { "redirect_uri",redirectUrl },
+        //        { "client_id",clientId },
+        //        { "client_secret",clientSecret },
+        //        { "code",req.Code }
+        //    };
 
-            var values = new FormUrlEncodedContent(dict);
-            var response = await client.PostAsync(accessTokenUrl, values);
-            var resultString = response.Content.ReadAsStringAsync().Result;
-            var result = JsonConvert.DeserializeObject<OAuthTokenResponse>(resultString);
+        //    var values = new FormUrlEncodedContent(dict);
+        //    var response = await client.PostAsync(accessTokenUrl, values);
+        //    var resultString = response.Content.ReadAsStringAsync().Result;
+        //    var result = JsonConvert.DeserializeObject<OAuthTokenResponse>(resultString);
 
 
-            var token = string.Empty;
+        //    var token = string.Empty;
 
-            switch (req.Provider)
-            {
-                case "Google":
-                    token = GenerateGoogleToken(result.IdToken);
-                    break;
-                case "Line":
-                    token = await GenerateLineTokenAsync(result.AccessToken);
-                    break;
-                default:
-                    return BadRequest();
-            }
+        //    switch (req.Provider)
+        //    {
+        //        case "Google":
+        //            token = GenerateGoogleToken(result.IdToken);
+        //            break;
+        //        case "Line":
+        //            token = await GenerateLineTokenAsync(result.AccessToken);
+        //            break;
+        //        default:
+        //            return BadRequest();
+        //    }
 
-            SetHttpOnlyCookie(token);
+        //    SetHttpOnlyCookie(token);
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
         private async Task<string> GenerateLineTokenAsync(string token)
         {
