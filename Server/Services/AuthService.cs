@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authentication.OAuth;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Server.Models;
@@ -63,7 +64,7 @@ namespace Server.Services
             {
                 case "Google":
                     var handler = new JwtSecurityTokenHandler();
-                    var info = handler.ReadJwtToken(result.IdToken);
+                    var info = handler.ReadJwtToken(result.AccessToken);
                     var name = info.Claims.FirstOrDefault(c => c.Type == "name").Value;
                     var email = info.Claims.FirstOrDefault(c => c.Type == "email").Value;
                     var photoUrl = info.Claims.FirstOrDefault(c => c.Type == "photo").Value;

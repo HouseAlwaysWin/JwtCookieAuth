@@ -1,4 +1,5 @@
-﻿using Server.Models;
+﻿using Microsoft.AspNetCore.Http;
+using Server.Models;
 using System.Collections.Generic;
 using System.Security.Claims;
 
@@ -8,6 +9,7 @@ namespace Server.Services
     {
         string CreateJwtToken(string secretKey, string issuer, List<Claim> claims);
         RefreshToken GenerateRefreshToken(string ipAddress);
+        string GenerateCsrfToken(HttpContext httpContext);
 
     }
 }

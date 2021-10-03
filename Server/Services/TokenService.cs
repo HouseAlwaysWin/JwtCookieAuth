@@ -1,4 +1,6 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.Tokens;
 using Server.Models;
 using System;
 using System.Collections.Generic;
@@ -13,6 +15,12 @@ namespace Server.Services
 {
     public class TokenService : ITokenService
     {
+        private readonly IAntiforgery _antiforgery;
+        public TokenService(IAntiforgery antiforgery)
+        {
+            this._antiforgery = antiforgery;
+        }
+
         public string CreateJwtToken(string secretKey, string issuer, List<Claim> claims)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
@@ -50,6 +58,27 @@ namespace Server.Services
 
             return refreshToken;
         }
+
+        /// <summary>
+        /// 產生Csrf Token
+        /// </summary>
+        /// <param name="httpContext"></param>
+        /// <returns></returns>
+        public string GenerateCsrfToken(HttpContext httpContext)
+        {
+            var res = this._antiforgery.GetAndStoreTokens(httpContext);
+            if (!httpContext.Request.Cookies.ContainsKey("XSRF-TOKEN"))
+            {
+                httpContext.Response.Cookies.Append("XSRF-TOKEN", res.CookieToken, new CookieOptions
+                {
+                    SameSite = SameSiteMode.None,
+                    Secure = true
+                });
+            }
+
+            return res.RequestToken;
+        }
+
 
     }
 }

@@ -4,6 +4,7 @@ using System;
 using Server.Models;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authentication.OAuth;
 
 namespace Server.OauthPrividers
 {
@@ -36,23 +37,29 @@ namespace Server.OauthPrividers
         private readonly string ACCESSTOKEN_URL = "https://www.googleapis.com/oauth2/v4/token";
 
         private readonly string USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo";
-		private readonly OAuthProviderConfig _config;
+        private readonly OAuthProviderConfig _config;
 
-		public GoogleOAuthProvider(OAuthProviderConfig config)
+        public GoogleOAuthProvider(OAuthProviderConfig config)
         {
-			this._config = config;
-		}
+            this._config = config;
+        }
 
-        public string CreateLoginUrl(){
+        public string CreateLoginUrl()
+        {
             var url = QueryHelpers.AddQueryString(this.AUTHORIZE_URL,
-            new Dictionary<string,string>{
+            new Dictionary<string, string>{
                 { this.CLIENT_ID, this._config.AppId},
                 { this.RESPONSE_TYPE, this.CODE},
                 { this.REDIRECT_URI, this._config.RedirectUrl},
                 { this.SCOPE, this._config.Scope},
                 { this.STATE, Guid.NewGuid().ToString()}
             });
-            return  url;
+            return url;
+        }
+
+        public AuthResponse GetAuthResponseInfo(OAuthTokenResponse res)
+        {
+            throw new Exception();
         }
     }
 }

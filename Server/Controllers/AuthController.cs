@@ -27,6 +27,7 @@ namespace Server.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _config;
+        private readonly ITokenService _tokenService;
         private readonly IAntiforgery _antiforgery;
         private readonly Dictionary<string, OAuthProviderConfig> _oauthConfig;
         private readonly IAuthService _authService;
@@ -36,12 +37,14 @@ namespace Server.Controllers
 
         public AuthController(
             IConfiguration config,
+            ITokenService tokenService,
             IAntiforgery antiforgery,
             IAuthService authService,
             IOptions<Dictionary<string, OAuthProviderConfig>> oauthConfig,
             ILogger<AuthController> logger)
         {
             this._config = config;
+            this._tokenService = tokenService;
             this._antiforgery = antiforgery;
             this._oauthConfig = oauthConfig.Value;
             this._authService = authService;
@@ -52,17 +55,8 @@ namespace Server.Controllers
         [HttpGet("getCsrfToken")]
         public ActionResult GetCsrfToken()
         {
-
-            var res = this._antiforgery.GetAndStoreTokens(HttpContext);
-            if (!Request.Cookies.ContainsKey("XSRF-TOKEN"))
-            {
-                Response.Cookies.Append("XSRF-TOKEN", res.CookieToken, new CookieOptions
-                {
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
-            }
-            return Ok(new { token = res.RequestToken });
+            var token = this._tokenService.GenerateCsrfToken(HttpContext);
+            return Ok(new { token = token });
         }
 
 
@@ -84,11 +78,24 @@ namespace Server.Controllers
 
         [HttpPost("ExternalLogin")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ExternalLogin(ExternalAuthParam req)
+        public async Task<ActionResult> ExternalLogin(ExternalLoginReq req)
         {
             try
             {
-                var userInfo = await _authService.ExternalAuthenticate(req);
+                var redirectUrl = _config[$"{req.Provider}:RedirectUrl"];
+                var clientId = _config[$"{req.Provider}:ClientId"];
+                var clientSecret = _config[$"{req.Provider}:ClientSecret"];
+                var accessTokenUrl = _config[$"{req.Provider}:AccessTokenUrl"];
+
+                var userInfo = await _authService.ExternalAuthenticate(new ExternalAuthParam
+                {
+                    RedirectUrl = redirectUrl,
+                    ClientId = clientId,
+                    ClientSecret = clientSecret,
+                    TokenApiURI = accessTokenUrl,
+                    Code = req.Code,
+                    Provider = req.Provider
+                });
                 return Ok(userInfo);
             }
             catch (Exception ex)

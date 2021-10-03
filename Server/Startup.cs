@@ -17,7 +17,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Server.Helpers;
 using Server.Middleware;
 using Server.Services;
 
@@ -42,10 +41,11 @@ namespace Server
             var Issuer = (env == "Development") ? _config["Token:Issuer"] : Environment.GetEnvironmentVariable("Token:Issuer");
             var tokenKey = (env == "Development") ? _config["Token:Key"] : Environment.GetEnvironmentVariable("Token:Key");
 
+            services.AddScoped<IRefreshTokenHandler, RefreshTokenHandler>();
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddScheme<JwtBearerOptions, JwtCookieAuthenticationHandler>("Bearer", options =>
+                .AddScheme<JwtBearerCookieOptions, JwtCookieAuthHandler>("Bearer", options =>
                 {
-                    //options.SaveToken = true;
                     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
