@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using JwtCookieAuth.Extensions;
+using JwtCookieAuth.Models;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -44,46 +46,41 @@ namespace Server
             services.AddScoped<IRefreshTokenHandler, RefreshTokenHandler>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddScheme<JwtBearerCookieOptions, JwtCookieAuthHandler>("Bearer", options =>
-                {
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                .UseBearerAuthToCookie(
+                    jwtOptions =>
                     {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
-                        ValidIssuer = Issuer,
-                        ValidateIssuer = true,
-                        ValidateAudience = false,
-                    };
+                        jwtOptions.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                        {
+                            ValidateIssuerSigningKey = true,
+                            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
+                            ValidIssuer = Issuer,
+                            ValidateIssuer = true,
+                            ValidateAudience = false,
+                        };
+                    },
+                    csrfOptions =>
+                    {
+                        csrfOptions.Cookie.Name = "XSRF-TOKEN";
+                        csrfOptions.HeaderName = "X-XSRF-TOKEN";
+                        csrfOptions.Cookie.HttpOnly = false;
+                        csrfOptions.SuppressXFrameOptionsHeader = false;
+                    })
+               .UseOAuthProvider(OAuthProviderEnum.Google, options =>
+               {
+                   options.ClientId = "563822801624-brvnu1sftmi78lfntvkk9s38jc4ubke7.apps.googleusercontent.com";
+                   options.ClientSecret = "Q0H3EoSU8eXC2aaLPTqrmMnP";
+                   options.TokenEndpoint = "https://oauth2.googleapis.com/token";
+                   options.RedirectUrl = "http://localhost:4200/callback/google";
+               })
+                .UseOAuthProvider(OAuthProviderEnum.Line, options =>
+                {
+                    options.ClientId = "1656348599";
+                    options.ClientSecret = "7e4e1bac01f88708e60544219c6c6214";
+                    options.TokenEndpoint = "https://api.line.me/oauth2/v2.1/token";
+                    options.RedirectUrl = "http://localhost:4200/callback/line";
+                    options.UserInformationEndpoint = "https://api.line.me/v2/profile";
                 });
-            // .AddJwtBearer(options =>
-            // {
-            //     options.SaveToken = true;
-            //     options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-            //     {
-            //         ValidateIssuerSigningKey = true,
-            //         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(tokenKey)),
-            //         ValidIssuer = Issuer,
-            //         ValidateIssuer = true,
-            //         ValidateAudience = false,
-            //     };
 
-            //     // options.Events = new JwtBearerEvents
-            //     // {
-            //     //     OnMessageReceived = context =>
-            //     //     {
-            //     //         var accessToken = context.Request.Query["access_token"];
-
-            //     //         var path = context.HttpContext.Request.Path;
-            //     //         if(!string.IsNullOrEmpty(accessToken) && 
-            //     //             path.StartsWithSegments("/hubs"))
-            //     //         {
-            //     //             context.Token = accessToken;
-            //     //         }
-
-            //     //         return Task.CompletedTask;
-            //     //     }
-            //     // };
-            // });
 
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

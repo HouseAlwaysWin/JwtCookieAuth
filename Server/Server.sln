@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Server.csproj", "{68951438-EB85-4A0F-AB41-B784CE8E8C86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtCookieAuth", "..\JwtCookieAuth\JwtCookieAuth.csproj", "{694769AA-11A5-4888-A61E-BE66219E1B9E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtCookieAuth", "..\JwtCookieAuth\JwtCookieAuth.csproj", "{F012639F-3E19-46F8-B3CC-4F11579DFF39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{68951438-EB85-4A0F-AB41-B784CE8E8C86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68951438-EB85-4A0F-AB41-B784CE8E8C86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68951438-EB85-4A0F-AB41-B784CE8E8C86}.Release|Any CPU.Build.0 = Release|Any CPU
-		{694769AA-11A5-4888-A61E-BE66219E1B9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{694769AA-11A5-4888-A61E-BE66219E1B9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{694769AA-11A5-4888-A61E-BE66219E1B9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{694769AA-11A5-4888-A61E-BE66219E1B9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F012639F-3E19-46F8-B3CC-4F11579DFF39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F012639F-3E19-46F8-B3CC-4F11579DFF39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F012639F-3E19-46F8-B3CC-4F11579DFF39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F012639F-3E19-46F8-B3CC-4F11579DFF39}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

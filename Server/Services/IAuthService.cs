@@ -1,11 +1,13 @@
-﻿using Server.Models;
+﻿using Microsoft.AspNetCore.Http;
+using Server.Models;
 using System.Threading.Tasks;
 
 namespace Server.Services
 {
     public interface IAuthService
     {
-        Task<AuthResponse> ExternalAuthenticate(ExternalAuthParam req);
-        AuthResponse RefreshToken(string token, string ipAddress);
+        Task<ExternalAuthResponse> ExternalLogin(string code, string provider, HttpContext context);
+        string GetAntiCsrfToken(HttpContext context);
+        void Logout(HttpContext context);
     }
 }
