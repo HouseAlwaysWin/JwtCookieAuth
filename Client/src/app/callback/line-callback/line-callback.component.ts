@@ -27,8 +27,9 @@ export class LineCallbackComponent implements OnInit {
         const options = {
           headers: new HttpHeaders({ "X-XSRF-TOKEN": csrfToken }),
         };
+        console.log(code);
         this.http.post(`${this.env.backendUrl}api/Auth/ExternalLogin`, {
-          code: code,
+          Code: code,
           Provider: 'Line'
         }, options)
           .subscribe((result: any) => {

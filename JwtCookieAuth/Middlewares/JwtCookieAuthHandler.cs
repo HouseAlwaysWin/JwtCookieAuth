@@ -48,7 +48,14 @@ namespace JwtCookieAuth.Middlewares
 
             Request.Headers[HeaderNames.Authorization] =
               $"Bearer {Request.Cookies[jwtTokenName]}";
-            authResult = await base.HandleAuthenticateAsync();
+            try
+            {
+                authResult = await base.HandleAuthenticateAsync();
+            }
+            catch
+            {
+                throw;
+            }
 
 
             if (!authResult.Succeeded)

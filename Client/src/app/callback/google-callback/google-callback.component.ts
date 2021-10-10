@@ -30,8 +30,8 @@ export class GoogleCallbackComponent implements OnInit {
       };
 
       this.http.post(`${this.env.backendUrl}api/Auth/ExternalLogin`, {
-        code: code,
-        provider: 'Google'
+        Code: code,
+        Provider: 'Google'
       }, options).subscribe((result: any) => {
         this.authService.isAuth.next(true);
         window.location.href = '/';

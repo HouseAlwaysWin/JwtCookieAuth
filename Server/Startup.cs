@@ -1,25 +1,18 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using JwtCookieAuth.Extensions;
 using JwtCookieAuth.Models;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Server.Middleware;
+using Server.Extensions;
 using Server.Services;
 
 namespace Server
@@ -40,15 +33,17 @@ namespace Server
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             services.AddControllers();
 
-            var Issuer = (env == "Development") ? _config["Token:Issuer"] : Environment.GetEnvironmentVariable("Token:Issuer");
-            var tokenKey = (env == "Development") ? _config["Token:Key"] : Environment.GetEnvironmentVariable("Token:Key");
+            var Issuer = _config["Token:Issuer"];
+            var tokenKey = _config["Token:Key"];
 
-            services.AddScoped<IRefreshTokenHandler, RefreshTokenHandler>();
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .UseBearerAuthToCookie(
                     jwtOptions =>
                     {
+                        jwtOptions.JwtKey = "0s9e8g7h7e739348dgjioiewrjf";
+                        jwtOptions.JwtIssuer = Issuer;
+
                         jwtOptions.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
                         {
                             ValidateIssuerSigningKey = true,
@@ -85,26 +80,21 @@ namespace Server
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddHttpClient<IAuthService, AuthService>();
-            //.SetHandlerLifetime(TimeSpan.FromMinutes(5))
-            //.AddPolicyHandler(GetRetryPolicy());
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<ICachedService, CachedService>();
-            services.AddScoped<ITokenService, TokenService>();
+            services.AddAutoMapper(typeof(AutoMapperProfile));
+
+
 
             services.AddCors();
 
-            services.AddMvc().AddMvcOptions(option =>
-            {
-                option.Filters.Add(new ValidateAntiForgeryTokenAttribute());
-            });
-
-            services.AddAntiforgery(options =>
-            {
-                options.Cookie.Name = "XSRF-TOKEN";
-                options.HeaderName = "X-XSRF-TOKEN";
-                options.Cookie.HttpOnly = false;
-                options.SuppressXFrameOptionsHeader = false;
-            });
+            services.AddMvc();
+            //services.AddAntiforgery(options =>
+            //{
+            //    options.Cookie.Name = "XSRF-TOKEN";
+            //    options.HeaderName = "X-XSRF-TOKEN";
+            //    options.Cookie.HttpOnly = false;
+            //    options.SuppressXFrameOptionsHeader = false;
+            //});
 
 
             services.AddSwaggerGen(c =>
@@ -138,7 +128,6 @@ namespace Server
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseMiddleware<ValidateAntiForgeryTokenMiddleware>();
 
 
             app.UseEndpoints(endpoints =>

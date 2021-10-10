@@ -12,7 +12,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Server.Models;
-using Server.OauthPrividers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Antiforgery;
@@ -58,11 +57,11 @@ namespace Server.Controllers
 
         [HttpPost("ExternalLogin")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> ExternalLogin(string code, string provider)
+        public async Task<ActionResult> ExternalLogin(ExternalAuthParam req)
         {
             try
             {
-                var userInfo = await _authService.ExternalLogin(code, provider, HttpContext);
+                var userInfo = await _authService.ExternalLogin(req.Code, req.Provider, HttpContext);
                 return Ok();
             }
             catch (Exception ex)
@@ -81,6 +80,21 @@ namespace Server.Controllers
             bool isAuth = User.Identity.IsAuthenticated;
             return Ok(isAuth);
         }
+
+        /// <summary>
+        /// ¨úªº¨¾¤îCSRFªºToken
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("getAntiCsrfToken")]
+        [IgnoreAntiforgeryToken]
+        [AllowAnonymous]
+        public ActionResult GetAntiCsrfToken()
+        {
+
+            string token = _authService.GetAntiCsrfToken(HttpContext);
+            return Ok(new { token });
+        }
+
 
     }
 }

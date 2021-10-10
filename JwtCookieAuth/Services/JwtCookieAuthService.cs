@@ -36,11 +36,11 @@ namespace JwtCookieAuth.Services
             ICachedService cachedService)
         {
             this._antiforgery = antiforgery ?? throw new ArgumentNullException(nameof(antiforgery));
-            this._oauthOptions = oauthOptions;
-            this._httpFactory = httpFactory;
-            this._antiforgeryOptions = antiforgeryOptions.CurrentValue;
-            this._cachedService = cachedService;
-            this._jwtOptions = jwtOptions.CurrentValue;
+            this._oauthOptions = oauthOptions ?? throw new ArgumentNullException(nameof(oauthOptions));
+            this._httpFactory = httpFactory ?? throw new ArgumentNullException(nameof(httpFactory));
+            this._antiforgeryOptions = antiforgeryOptions.CurrentValue ?? throw new ArgumentNullException(nameof(antiforgeryOptions));
+            this._cachedService = cachedService ?? throw new ArgumentNullException(nameof(cachedService));
+            this._jwtOptions = jwtOptions.CurrentValue ?? throw new ArgumentNullException(nameof(jwtOptions));
         }
         /// <summary>
         /// 產生Jwt Token
@@ -100,25 +100,25 @@ namespace JwtCookieAuth.Services
             token.RevokedByIp = ipAddress;
         }
 
-        /// <summary>
-        /// 產生Csrf Token
-        /// </summary>
-        /// <param name="httpContext"></param>
-        /// <returns></returns>
-        public string GenerateCsrfToken(HttpContext httpContext)
-        {
-            var res = this._antiforgery.GetAndStoreTokens(httpContext);
-            if (!httpContext.Request.Cookies.ContainsKey(_antiforgeryOptions.Cookie.Name))
-            {
-                httpContext.Response.Cookies.Append(_antiforgeryOptions.Cookie.Name, res.CookieToken, new CookieOptions
-                {
-                    SameSite = SameSiteMode.None,
-                    Secure = true
-                });
-            }
+        ///// <summary>
+        ///// 產生Csrf Token
+        ///// </summary>
+        ///// <param name="httpContext"></param>
+        ///// <returns></returns>
+        //public string GenerateCsrfToken(HttpContext httpContext)
+        //{
+        //    var res = this._antiforgery.GetAndStoreTokens(httpContext);
+        //    if (!httpContext.Request.Cookies.ContainsKey(_antiforgeryOptions.Cookie.Name))
+        //    {
+        //        httpContext.Response.Cookies.Append(_antiforgeryOptions.Cookie.Name, res.CookieToken, new CookieOptions
+        //        {
+        //            SameSite = SameSiteMode.None,
+        //            Secure = true
+        //        });
+        //    }
 
-            return res.RequestToken;
-        }
+        //    return res.RequestToken;
+        //}
 
         /// <summary>
         ///  新增Jwt Token和RefreshToken到Http only Cookie
@@ -199,9 +199,11 @@ namespace JwtCookieAuth.Services
         public string GetAndSetAntiCsrfTokenCookie(HttpContext context)
         {
             var res = this._antiforgery.GetAndStoreTokens(context);
-            if (!context.Request.Cookies.ContainsKey("XSRF-TOKEN"))
+            //this._antiforgery.SetCookieTokenAndHeader(context);
+
+            if (!context.Request.Cookies.ContainsKey(_antiforgeryOptions.Cookie.Name))
             {
-                context.Response.Cookies.Append("XSRF-TOKEN", res.CookieToken, new CookieOptions
+                context.Response.Cookies.Append(_antiforgeryOptions.Cookie.Name, res.CookieToken, new CookieOptions
                 {
                     SameSite = SameSiteMode.None,
                     Secure = true
@@ -217,6 +219,7 @@ namespace JwtCookieAuth.Services
                 Assembly currentAssem = Assembly.GetExecutingAssembly();
                 var type = currentAssem.GetType($"{assemblyname}.{provider}OAuthProvider");
                 if (type == null) throw new NullReferenceException($"type of {provider}OAuthProvider not found,please implement {provider}OAuthProvider.");
+                var linePro = new LineOAuthProvider(_oauthOptions, _httpFactory);
                 var oauthHandler = (IOAuthProviderBase)Activator.CreateInstance(type, this._oauthOptions, _httpFactory);
                 return oauthHandler;
             }
@@ -233,7 +236,7 @@ namespace JwtCookieAuth.Services
         /// <param name="assemblyname">OAuth Provider的namespace </param>
         /// <param name="provider">OAuth 提供者</param>
         /// <returns></returns>
-        public async Task<OAuthUserInfoRes> GetOAuthUserInfoAsync(string code, OAuthProviderEnum provider, HttpContext context, string assemblyName = "JwtCookieAuth.Providers.OAuth.OAuthProviders")
+        public async Task<OAuthUserInfoRes> GetOAuthUserInfoAsync(string code, OAuthProviderEnum provider, HttpContext context, string assemblyName = "JwtCookieAuth.Providers.OAuth")
         {
             var oauthProvider = GetOAuthProviderInstance(assemblyName, provider, context);
             OAuthTokenRes oauthResult = await oauthProvider.ExchangeCodeAsync(code, provider, context);

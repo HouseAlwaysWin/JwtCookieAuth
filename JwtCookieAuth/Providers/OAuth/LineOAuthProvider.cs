@@ -17,7 +17,6 @@ namespace JwtCookieAuth.Providers.OAuth
         private readonly IHttpClientFactory _httpFactory;
 
         public LineOAuthProvider(IOptionsMonitor<OAuthConfigOptions> options,
-            IHttpContextAccessor httpContextAccessor,
             IHttpClientFactory httpFactory) : base(options, httpFactory)
         {
             this._options = options;
