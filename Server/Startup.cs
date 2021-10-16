@@ -83,14 +83,6 @@ namespace Server
             services.AddCors();
 
             services.AddMvc();
-            //services.AddAntiforgery(options =>
-            //{
-            //    options.Cookie.Name = "XSRF-TOKEN";
-            //    options.HeaderName = "X-XSRF-TOKEN";
-            //    options.Cookie.HttpOnly = false;
-            //    options.SuppressXFrameOptionsHeader = false;
-            //});
-
 
             services.AddSwaggerGen(c =>
             {
