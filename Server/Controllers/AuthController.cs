@@ -17,6 +17,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Antiforgery;
 using Server.Services;
 using Microsoft.Extensions.Logging;
+using JwtCookieAuth.Models;
+using Server.Extensions;
 
 namespace Server.Controllers
 {
@@ -77,8 +79,13 @@ namespace Server.Controllers
         [HttpGet("isAuth")]
         public ActionResult IsAuth()
         {
+            UserInfo info = User.Claims.ConvertToUserInfo();
             bool isAuth = User.Identity.IsAuthenticated;
-            return Ok(isAuth);
+            return Ok(new UserAuthResponse
+            {
+                IsAuth = isAuth,
+                UserInfo = info
+            });
         }
 
         /// <summary>
@@ -93,6 +100,15 @@ namespace Server.Controllers
 
             string token = _authService.GetAntiCsrfToken(HttpContext);
             return Ok(new { token });
+        }
+
+        [HttpGet("getOAuthLoginUrl")]
+        [IgnoreAntiforgeryToken]
+        [AllowAnonymous]
+        public ActionResult GetOAuthLoginUrl(string provider)
+        {
+            var url = this._authService.GetOAuthLoginUrl(provider);
+            return Ok(new { url });
         }
 
 

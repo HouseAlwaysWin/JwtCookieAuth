@@ -5,8 +5,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './login/login.component';
-import { LineCallbackComponent } from './callback/line-callback/line-callback.component';
-import { GoogleCallbackComponent } from './callback/google-callback/google-callback.component';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 
 @NgModule({

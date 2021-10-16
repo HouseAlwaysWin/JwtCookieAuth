@@ -33,7 +33,7 @@ namespace JwtCookieAuth.Providers.OAuth
                     Email = email,
                     PictureUrl = pictureUrl,
                     Name = name,
-                    Provider = OAuthProviderEnum.Google
+                    Provider = OAuthProviderEnum.Google.ToString()
                 };
                 return result;
             });

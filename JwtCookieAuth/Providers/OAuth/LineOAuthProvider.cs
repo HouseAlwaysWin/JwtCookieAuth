@@ -36,7 +36,7 @@ namespace JwtCookieAuth.Providers.OAuth
                 Id = profileRes.UserId,
                 PictureUrl = profileRes.PictureUrl,
                 Name = profileRes.DisplayName,
-                Provider = OAuthProviderEnum.Line
+                Provider = OAuthProviderEnum.Line.ToString()
             };
             return result;
         }

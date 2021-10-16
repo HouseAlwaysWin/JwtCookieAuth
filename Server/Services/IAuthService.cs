@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using JwtCookieAuth.Models;
+using Microsoft.AspNetCore.Http;
 using Server.Models;
 using System.Threading.Tasks;
 
@@ -9,5 +10,6 @@ namespace Server.Services
         Task<ExternalAuthResponse> ExternalLogin(string code, string provider, HttpContext context);
         string GetAntiCsrfToken(HttpContext context);
         void Logout(HttpContext context);
+        string GetOAuthLoginUrl(string provider);
     }
 }

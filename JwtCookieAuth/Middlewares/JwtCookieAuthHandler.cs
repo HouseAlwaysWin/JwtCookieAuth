@@ -19,6 +19,7 @@ namespace JwtCookieAuth.Middlewares
         private readonly IJwtCookieAuthService _authService;
         private readonly ICachedService _cachedService;
         private readonly JwtCookieBearerOptions _cookieOptions;
+        private readonly ILoggerFactory _logger;
 
 
         public JwtCookieAuthHandler(
@@ -31,6 +32,7 @@ namespace JwtCookieAuth.Middlewares
             this._authService = authService ?? throw new ArgumentNullException(nameof(authService));
             this._cachedService = cachedService ?? throw new ArgumentNullException(nameof(authService)); ;
             this._cookieOptions = options?.CurrentValue ?? throw new ArgumentNullException(nameof(options));
+            this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
 
@@ -112,6 +114,7 @@ namespace JwtCookieAuth.Middlewares
                     authResult = await base.HandleAuthenticateAsync();
                 }
             }
+
             Request.Headers.Remove(HeaderNames.Authorization);
             return authResult;
         }

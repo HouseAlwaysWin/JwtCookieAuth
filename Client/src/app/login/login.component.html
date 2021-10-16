@@ -1,5 +1,5 @@
 <div>
-  <div *ngIf="!(authService.isAuth$| async)">
+  <div *ngIf="!isLogin">
     <div>
       <a [href]="lineLoginUrl"
          class="login-line-btn">
@@ -13,7 +13,7 @@
       </a>
     </div>
   </div>
-  <div *ngIf="authService.isAuth$ | async">
+  <div *ngIf="isLogin">
     <button (click)="logout()">
       Logout
     </button>

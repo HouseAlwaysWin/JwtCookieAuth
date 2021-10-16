@@ -30,10 +30,10 @@ namespace JwtCookieAuth.Providers.OAuth
         /// <param name="code"></param>
         /// <param name="provider"></param>
         /// <returns></returns>
-        public virtual async Task<OAuthTokenRes> ExchangeCodeAsync(string code, OAuthProviderEnum provider, HttpContext context)
+        public virtual async Task<OAuthTokenRes> ExchangeCodeAsync(string code, string provider, HttpContext context)
         {
             var httpClient = this._httpFactory.CreateClient();
-            var option = _options.Get(Enum.GetName(provider));
+            var option = _options.Get(provider);
 
             var tokenRequestParameters = new Dictionary<string, string>()
             {
@@ -70,6 +70,33 @@ namespace JwtCookieAuth.Providers.OAuth
         public virtual Task<OAuthUserInfoRes> GetOAuthUserInfoAsync(OAuthTokenRes tokenRes)
         {
             throw new NotImplementedException();
+        }
+
+        public virtual string GetOAuthLoginUrl(string provider)
+        {
+            var options = _options.Get(provider.ToString());
+            var authUrl = options.AuthorizationEndpoint;
+            var redirectUrl = options.RedirectUrl;
+            var clientId = options.ClientId;
+
+            var parameters = new Dictionary<string, string>
+            {
+                { "client_id", clientId },
+                { "scope", "profile%20openid%20email" },
+                { "response_type", "code" },
+                { "redirect_uri", redirectUrl },
+                { "state", "null" }
+            };
+            //string url = QueryHelpers.AddQueryString(authUrl, parameters);
+            StringBuilder loginUrlBuilder = new StringBuilder($"{authUrl}?");
+            foreach (var p in parameters)
+            {
+                loginUrlBuilder.Append($"{p.Key}={p.Value}&");
+            }
+
+            loginUrlBuilder.Remove(loginUrlBuilder.Length - 1, 1);
+            var url = loginUrlBuilder.ToString();
+            return url;
         }
 
         private static async Task<string> Display(HttpResponseMessage response)

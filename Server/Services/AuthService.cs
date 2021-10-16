@@ -47,9 +47,7 @@ namespace Server.Services
             OAuthUserInfoRes userInfo = null;
             try
             {
-                var providerEnum = (OAuthProviderEnum)Enum.Parse(typeof(OAuthProviderEnum), provider);
-                userInfo = await _jwtAuthService.GetOAuthUserInfoAsync(code, providerEnum, context);
-
+                userInfo = await _jwtAuthService.GetOAuthUserInfoAsync(code, provider, context);
                 var claims = userInfo.ConvertToClaims();
                 await _jwtAuthService.AddLoginCookiesAsync(claims, context);
             }
@@ -79,6 +77,12 @@ namespace Server.Services
             return _jwtAuthService.GetAndSetAntiCsrfTokenCookie(context);
         }
 
+        public string GetOAuthLoginUrl(string provider)
+        {
+            var oauthProvider = _jwtAuthService.GetOAuthProviderInstance(provider);
+            string url = oauthProvider.GetOAuthLoginUrl(provider);
+            return url;
+        }
 
     }
 }

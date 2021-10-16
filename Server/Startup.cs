@@ -34,14 +34,14 @@ namespace Server
             services.AddControllers();
 
             var Issuer = _config["Token:Issuer"];
-            var tokenKey = _config["Token:Key"];
+            var tokenKey = Guid.NewGuid().ToString();
 
 
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .UseBearerAuthToCookie(
+                .UseJwtAuthToCookie(
                     jwtOptions =>
                     {
-                        jwtOptions.JwtKey = "0s9e8g7h7e739348dgjioiewrjf";
+                        jwtOptions.JwtKey = tokenKey;
                         jwtOptions.JwtIssuer = Issuer;
 
                         jwtOptions.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
@@ -52,27 +52,22 @@ namespace Server
                             ValidateIssuer = true,
                             ValidateAudience = false,
                         };
-                    },
-                    csrfOptions =>
-                    {
-                        csrfOptions.Cookie.Name = "XSRF-TOKEN";
-                        csrfOptions.HeaderName = "X-XSRF-TOKEN";
-                        csrfOptions.Cookie.HttpOnly = false;
-                        csrfOptions.SuppressXFrameOptionsHeader = false;
                     })
                .UseOAuthProvider(OAuthProviderEnum.Google, options =>
                {
                    options.ClientId = "563822801624-brvnu1sftmi78lfntvkk9s38jc4ubke7.apps.googleusercontent.com";
                    options.ClientSecret = "Q0H3EoSU8eXC2aaLPTqrmMnP";
                    options.TokenEndpoint = "https://oauth2.googleapis.com/token";
-                   options.RedirectUrl = "http://localhost:4200/callback/google";
+                   options.AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+                   options.RedirectUrl = "http://localhost:4200/callback?provider=Google";
                })
                 .UseOAuthProvider(OAuthProviderEnum.Line, options =>
                 {
-                    options.ClientId = "1656348599";
-                    options.ClientSecret = "7e4e1bac01f88708e60544219c6c6214";
+                    options.ClientId = "1656532633";
+                    options.ClientSecret = "e5725f7d08de1d5d1d813d008365d935";
+                    options.AuthorizationEndpoint = "https://access.line.me/oauth2/v2.1/authorize";
                     options.TokenEndpoint = "https://api.line.me/oauth2/v2.1/token";
-                    options.RedirectUrl = "http://localhost:4200/callback/line";
+                    options.RedirectUrl = "http://localhost:4200/callback?provider=Line";
                     options.UserInformationEndpoint = "https://api.line.me/v2/profile";
                 });
 

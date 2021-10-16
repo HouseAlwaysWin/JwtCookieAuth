@@ -2,6 +2,7 @@
 using JwtCookieAuth.Models;
 using JwtCookieAuth.Providers.OAuth;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -42,6 +43,7 @@ namespace JwtCookieAuth.Services
             this._cachedService = cachedService ?? throw new ArgumentNullException(nameof(cachedService));
             this._jwtOptions = jwtOptions.CurrentValue ?? throw new ArgumentNullException(nameof(jwtOptions));
         }
+
         /// <summary>
         /// 產生Jwt Token
         /// </summary>
@@ -99,26 +101,6 @@ namespace JwtCookieAuth.Services
             token.Revoked = DateTime.UtcNow;
             token.RevokedByIp = ipAddress;
         }
-
-        ///// <summary>
-        ///// 產生Csrf Token
-        ///// </summary>
-        ///// <param name="httpContext"></param>
-        ///// <returns></returns>
-        //public string GenerateCsrfToken(HttpContext httpContext)
-        //{
-        //    var res = this._antiforgery.GetAndStoreTokens(httpContext);
-        //    if (!httpContext.Request.Cookies.ContainsKey(_antiforgeryOptions.Cookie.Name))
-        //    {
-        //        httpContext.Response.Cookies.Append(_antiforgeryOptions.Cookie.Name, res.CookieToken, new CookieOptions
-        //        {
-        //            SameSite = SameSiteMode.None,
-        //            Secure = true
-        //        });
-        //    }
-
-        //    return res.RequestToken;
-        //}
 
         /// <summary>
         ///  新增Jwt Token和RefreshToken到Http only Cookie
@@ -198,8 +180,7 @@ namespace JwtCookieAuth.Services
 
         public string GetAndSetAntiCsrfTokenCookie(HttpContext context)
         {
-            var res = this._antiforgery.GetAndStoreTokens(context);
-            //this._antiforgery.SetCookieTokenAndHeader(context);
+            var res = this._antiforgery.GetTokens(context);
 
             if (!context.Request.Cookies.ContainsKey(_antiforgeryOptions.Cookie.Name))
             {
@@ -212,14 +193,26 @@ namespace JwtCookieAuth.Services
             return res.RequestToken;
         }
 
-        private IOAuthProviderBase GetOAuthProviderInstance(string assemblyname, OAuthProviderEnum provider, HttpContext context)
+        public IOAuthProviderBase GetOAuthProviderInstance(string provider, string assemblyName = "")
         {
             try
             {
                 Assembly currentAssem = Assembly.GetExecutingAssembly();
-                var type = currentAssem.GetType($"{assemblyname}.{provider}OAuthProvider");
-                if (type == null) throw new NullReferenceException($"type of {provider}OAuthProvider not found,please implement {provider}OAuthProvider.");
-                var linePro = new LineOAuthProvider(_oauthOptions, _httpFactory);
+
+                Type type = null;
+                if (string.IsNullOrEmpty(assemblyName))
+                {
+                    type = currentAssem.GetType($"JwtCookieAuth.Providers.OAuth.{provider}OAuthProvider");
+                }
+                else
+                {
+                    type = currentAssem.GetType($"{assemblyName}.{provider}OAuthProvider");
+                }
+
+                if (type == null)
+                {
+                    throw new NullReferenceException($"type of {provider}OAuthProvider not found.");
+                }
                 var oauthHandler = (IOAuthProviderBase)Activator.CreateInstance(type, this._oauthOptions, _httpFactory);
                 return oauthHandler;
             }
@@ -230,18 +223,58 @@ namespace JwtCookieAuth.Services
         }
 
         /// <summary>
-        /// 取得OAuth 會員資訊
+        /// Get OAuth Member Informations
         /// </summary>
         /// <param name="code">存取碼</param>
         /// <param name="assemblyname">OAuth Provider的namespace </param>
         /// <param name="provider">OAuth 提供者</param>
         /// <returns></returns>
-        public async Task<OAuthUserInfoRes> GetOAuthUserInfoAsync(string code, OAuthProviderEnum provider, HttpContext context, string assemblyName = "JwtCookieAuth.Providers.OAuth")
+        public async Task<OAuthUserInfoRes> GetOAuthUserInfoAsync(string code, string provider, HttpContext context, string assemblyName = "")
         {
-            var oauthProvider = GetOAuthProviderInstance(assemblyName, provider, context);
+            var oauthProvider = GetOAuthProviderInstance(provider, assemblyName);
             OAuthTokenRes oauthResult = await oauthProvider.ExchangeCodeAsync(code, provider, context);
             var userInfo = await oauthProvider.GetOAuthUserInfoAsync(oauthResult);
             return userInfo;
+        }
+
+        public string GetOAuthLoginUrl(string provider, string assemblyName = "")
+        {
+            var oauthProvider = GetOAuthProviderInstance(provider, assemblyName);
+            string url = oauthProvider.GetOAuthLoginUrl(provider);
+            return url;
+        }
+
+        /// <summary>
+        /// 產生Password Hash
+        /// </summary>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public string GeneratePasswordHash(string password, string salt, int iterationCount = 10000, int numBytesRequested = 128)
+        {
+
+            string hashed = Convert.ToBase64String(KeyDerivation.Pbkdf2(
+                password: password,
+                salt: Encoding.UTF8.GetBytes(salt),
+                prf: KeyDerivationPrf.HMACSHA512,
+                iterationCount,
+                numBytesRequested));
+            return hashed;
+        }
+
+        /// <summary>
+        /// 驗證密碼
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="passwordHash"></param>
+        /// <returns></returns>
+        public bool ValidatedPassword(string password, string passwordHash, string salt)
+        {
+            var getPasswordHash = GeneratePasswordHash(password, salt);
+            if (getPasswordHash == passwordHash)
+            {
+                return true;
+            }
+            return false;
         }
 
 
