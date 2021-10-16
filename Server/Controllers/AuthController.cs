@@ -64,7 +64,7 @@ namespace Server.Controllers
             try
             {
                 var userInfo = await _authService.ExternalLogin(req.Code, req.Provider, HttpContext);
-                return Ok();
+                return Ok(userInfo);
             }
             catch (Exception ex)
             {

@@ -9,12 +9,13 @@ namespace JwtCookieAuth.Models
 {
     public class OAuthTokenRes
     {
-        public OAuthTokenRes(string accessToken, string tokenType, string refreshToken, string expiresIn)
+        public OAuthTokenRes(string accessToken, string tokenType, string refreshToken, string expiresIn, string idToken)
         {
             AccessToken = accessToken;
             TokenType = tokenType;
             RefreshToken = refreshToken;
             ExpiresIn = expiresIn;
+            IdToken = idToken;
         }
 
         private OAuthTokenRes(JObject response)
@@ -24,6 +25,7 @@ namespace JwtCookieAuth.Models
             TokenType = response.Value<string>("token_type");
             RefreshToken = response.Value<string>("refresh_token");
             ExpiresIn = response.Value<string>("expires_in");
+            IdToken = response.Value<string>("id_token");
         }
 
         private OAuthTokenRes(Exception error)
@@ -46,6 +48,7 @@ namespace JwtCookieAuth.Models
         public string TokenType { get; set; }
         public string RefreshToken { get; set; }
         public string ExpiresIn { get; set; }
+        public string IdToken { get; set; }
         public Exception Error { get; set; }
     }
 

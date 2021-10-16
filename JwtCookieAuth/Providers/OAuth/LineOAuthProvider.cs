@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -24,20 +26,40 @@ namespace JwtCookieAuth.Providers.OAuth
         }
         public override async Task<OAuthUserInfoRes> GetOAuthUserInfoAsync(OAuthTokenRes tokenRes)
         {
-            var httpClient = this._httpFactory.CreateClient();
-            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {tokenRes.AccessToken}");
-            var userEndpoint = this._options.Get(OAuthProviderEnum.Line.ToString()).UserInformationEndpoint;
-            var profileRequest = await httpClient.GetAsync(userEndpoint);
-            var profileString = await profileRequest.Content.ReadAsStringAsync();
-            LineProfileRes profileRes = JsonConvert.DeserializeObject<LineProfileRes>(profileString);
+            var result = new OAuthUserInfoRes();
+            var handler = new JwtSecurityTokenHandler();
 
-            var result = new OAuthUserInfoRes
+            if (!string.IsNullOrEmpty(tokenRes.IdToken))
             {
-                Id = profileRes.UserId,
-                PictureUrl = profileRes.PictureUrl,
-                Name = profileRes.DisplayName,
-                Provider = OAuthProviderEnum.Line.ToString()
-            };
+                var info = handler.ReadJwtToken(tokenRes.IdToken);
+                if (info != null)
+                {
+                    var name = info.Claims?.FirstOrDefault(c => c.Type == "name")?.Value;
+                    var email = info.Claims?.FirstOrDefault(c => c.Type == "email")?.Value;
+                    var pictureUrl = info.Claims?.FirstOrDefault(c => c.Type == "picture")?.Value;
+                    result.Email = email;
+                    result.Name = name;
+                    result.PictureUrl = pictureUrl;
+                }
+            }
+
+            var userEndpoint = this._options.Get(OAuthProviderEnum.Line.ToString())?.UserInformationEndpoint;
+            if (!string.IsNullOrEmpty(userEndpoint))
+            {
+                var httpClient = this._httpFactory.CreateClient();
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {tokenRes.AccessToken}");
+                var profileRes = await httpClient.GetAsync(userEndpoint);
+                if (profileRes.IsSuccessStatusCode)
+                {
+                    var payload = JObject.Parse(await profileRes.Content.ReadAsStringAsync());
+                    result.Id = payload.Value<string>("userId");
+                    result.Name = payload.Value<string>("displayName");
+                    result.PictureUrl = payload.Value<string>("pictureUrl");
+                }
+            }
+
+            result.Provider = OAuthProviderEnum.Line.ToString();
+
             return result;
         }
     }

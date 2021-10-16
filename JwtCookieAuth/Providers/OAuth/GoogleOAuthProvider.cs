@@ -20,21 +20,26 @@ namespace JwtCookieAuth.Providers.OAuth
         {
             return await Task.Run(() =>
             {
-                GoogleTokenRes googleRes = new GoogleTokenRes(tokenRes);
                 var handler = new JwtSecurityTokenHandler();
-                var info = handler.ReadJwtToken(googleRes.IdToken);
-                var name = info.Claims.FirstOrDefault(c => c.Type == "name").Value;
-                var email = info.Claims.FirstOrDefault(c => c.Type == "email").Value;
-                var pictureUrl = info.Claims.First(c => c.Type == "picture").Value;
-
-
-                var result = new OAuthUserInfoRes
+                var result = new OAuthUserInfoRes();
+                if (!string.IsNullOrEmpty(tokenRes.IdToken))
                 {
-                    Email = email,
-                    PictureUrl = pictureUrl,
-                    Name = name,
-                    Provider = OAuthProviderEnum.Google.ToString()
-                };
+                    var info = handler.ReadJwtToken(tokenRes.IdToken);
+                    if (info != null)
+                    {
+                        var name = info.Claims?.FirstOrDefault(c => c.Type == "name")?.Value;
+                        var email = info.Claims?.FirstOrDefault(c => c.Type == "email")?.Value;
+                        var pictureUrl = info.Claims?.FirstOrDefault(c => c.Type == "picture")?.Value;
+                        result = new OAuthUserInfoRes
+                        {
+                            Email = email,
+                            PictureUrl = pictureUrl,
+                            Name = name,
+                            Provider = OAuthProviderEnum.Google.ToString(),
+                        };
+                    }
+                }
+
                 return result;
             });
         }

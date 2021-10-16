@@ -31,10 +31,12 @@ export class CallbackComponent implements OnInit {
           Provider: provider
         }).subscribe((result: AuthRes) => {
           this.authService.authInfo.next(result);
-          this.router.navigate(['/']);
+          window.location.href = '';
+          // this.router.navigate(['/']);
         }, error => {
           console.log(error);
-          this.router.navigate(['/']);
+          window.location.href = '';
+          // this.router.navigate(['/']);
         });
 
       })

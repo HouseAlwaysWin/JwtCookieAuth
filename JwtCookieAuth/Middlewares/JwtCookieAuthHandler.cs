@@ -19,7 +19,7 @@ namespace JwtCookieAuth.Middlewares
         private readonly IJwtCookieAuthService _authService;
         private readonly ICachedService _cachedService;
         private readonly JwtCookieBearerOptions _cookieOptions;
-        private readonly ILoggerFactory _logger;
+        private readonly ILogger<JwtCookieAuthHandler> _logger;
 
 
         public JwtCookieAuthHandler(
@@ -32,7 +32,7 @@ namespace JwtCookieAuth.Middlewares
             this._authService = authService ?? throw new ArgumentNullException(nameof(authService));
             this._cachedService = cachedService ?? throw new ArgumentNullException(nameof(authService)); ;
             this._cookieOptions = options?.CurrentValue ?? throw new ArgumentNullException(nameof(options));
-            this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            this._logger = logger.CreateLogger<JwtCookieAuthHandler>() ?? throw new ArgumentNullException(nameof(logger));
         }
 
 
@@ -62,6 +62,7 @@ namespace JwtCookieAuth.Middlewares
 
             if (!authResult.Succeeded)
             {
+                _logger.LogInformation(authResult?.Failure?.Message);
                 var cookieRefreshToken = Request.Cookies[_cookieOptions.RefreshTokenName];
                 var newJwtToken = string.Empty;
                 if (cookieRefreshToken != null)

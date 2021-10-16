@@ -47,6 +47,7 @@ namespace JwtCookieAuth.Extensions
         {
             var claims = new List<Claim>{
                 new Claim(JwtRegisteredClaimNames.UniqueName,userInfo.Name),
+                new Claim("Name",userInfo.Name),
                 new Claim("Provider",userInfo.Provider.ToString()),
             };
             if (!string.IsNullOrEmpty(userInfo.Email))

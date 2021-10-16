@@ -33,7 +33,7 @@ namespace Server
             var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
             services.AddControllers();
 
-            var Issuer = _config["Token:Issuer"];
+            var Issuer = "Server";
             var tokenKey = Guid.NewGuid().ToString();
 
 
@@ -53,14 +53,15 @@ namespace Server
                             ValidateAudience = false,
                         };
                     })
-               .UseOAuthProvider(OAuthProviderEnum.Google, options =>
-               {
-                   options.ClientId = "563822801624-brvnu1sftmi78lfntvkk9s38jc4ubke7.apps.googleusercontent.com";
-                   options.ClientSecret = "Q0H3EoSU8eXC2aaLPTqrmMnP";
-                   options.TokenEndpoint = "https://oauth2.googleapis.com/token";
-                   options.AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
-                   options.RedirectUrl = "http://localhost:4200/callback?provider=Google";
-               })
+                //.UseOAuthProvider(OAuthProviderEnum.Google, options =>
+                //{
+                //    options.ClientId = "563822801624-brvnu1sftmi78lfntvkk9s38jc4ubke7.apps.googleusercontent.com";
+                //    options.ClientSecret = "Q0H3EoSU8eXC2aaLPTqrmMnP";
+                //    options.TokenEndpoint = "https://oauth2.googleapis.com/token";
+                //    options.AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
+                //    options.RedirectUrl = "http://localhost:4200/callback?provider=Google";
+                //})
+                .UseOAuthProvider(OAuthProviderEnum.Google, _config)
                 .UseOAuthProvider(OAuthProviderEnum.Line, options =>
                 {
                     options.ClientId = "1656532633";

@@ -6,7 +6,7 @@ export interface AuthRes {
 export interface UserInfo {
   id: string,
   name: string,
-  eamil: string,
+  email: string,
   pictureUrl: string,
   provider: string
 }
